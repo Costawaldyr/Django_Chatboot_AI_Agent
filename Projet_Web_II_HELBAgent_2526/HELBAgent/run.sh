@@ -4,21 +4,25 @@ echo "======================================"
 echo "  Launching Django Project HELBAgent"
 echo "======================================"
 
-echo " Installing Python dependencies..."
-python3 -m pip install --upgrade pip
-pip install -r requirements.txt
+set -e
 
-echo " Starting Django server..."
-echo " Applying database migrations..."
+echo "Installing Python dependencies..."
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
+
+cd HELBAgent || exit
+
+echo "Applying database migrations..."
 python3 manage.py makemigrations
 python3 manage.py migrate
 
 echo ""
 echo "=========================================="
-echo "✅ Server is starting..."
+echo "Server is starting..."
 echo "=========================================="
 echo ""
-echo "🌐 Access the application at:"
+echo " Access the application at:"
 echo "   http://127.0.0.1:8000"
-xdg-open "http://127.0.0.1:8000" >/dev/null 2>&1 &
+
+xdg-open "http://127.0.0.1:8000" >/dev/null 2>&1 || true
 python3 manage.py runserver
