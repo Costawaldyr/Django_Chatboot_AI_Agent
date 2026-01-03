@@ -1,0 +1,182 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block content %}
+    <div class="content-section">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <img src="{{ user.profile.image.url }}" class="img-fluid rounded-circle me-3" style="width:60px;height:60px;object-fit:cover;" alt="User Avatar">
+                <div>
+                    <h2 class="mb-0">
+                        Collaborative Chat B2
+                        <span class="badge bg-info">{{ user.username }}</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row vh-100">
+            <div class="col-md-8 p-3">
+                <div class="card">
+                    <div id="chat-box" class="border rounded p-3" style="height: 400px; overflow-y: auto; padding: 20px;"></div>
+                    <div class="card-footer">
+                        <form>
+                            <textarea id="chat-input" rows="1" class="form-control" placeholder="Type your message..."></textarea>
+                            <button type="submit" id="send-button" class="btn btn-primary">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 p-3">
+                <h5>Webcam HELBPlays</h5>
+                <div id="image-container" class="border rounded text-center p-3" style="height: 50vh;">
+                    <div class="spinner-border"></div>
+                    <img id="frame-img" src="" alt="Webcam" class="img-fluid rounded mt-3" style="max-height: 60vh;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // ==================== CONFIGURATION ====================
+            const CONFIG = {
+                // Refresh intervals in milliseconds
+                CHAT_REFRESH_INTERVAL: 2000,
+                IMAGE_REFRESH_INTERVAL: 5000,
+
+                // User credentials
+                USERNAME: "{{ user.username }}",
+                PERSONAL_KEY: "{{ personal_key }}",
+
+                // API endpoints
+                CHAT_URL: '/proxy/chat-txt/',
+                IMAGE_URL: 'https://helbplays2526.alwaysdata.net/frame.jpg',
+                SEND_URL: 'https://helbplays2526.alwaysdata.net/chat.php',
+
+                // Keyboard codes
+                ENTER_KEY_CODE: 13
+            };
+
+            // ==================== UTILITY FUNCTIONS ====================
+
+            /**
+             * Encode string to base64
+             * @param {string} str - String to encode
+             * @returns {string} Base64 encoded string
+             */
+            function encodeToBase64(str) {
+                return btoa(str);
+            }
+
+            /**
+             * Scroll chat box to bottom
+             */
+            function scrollChatToBottom() {
+                const chatBox = $('#chat-box');
+                chatBox.scrollTop(chatBox[0].scrollHeight);
+            }
+
+            /**
+             * Display error message in chat box
+             * @param {number} statusCode - HTTP status code
+             */
+            function displayChatError(statusCode) {
+                $('#chat-box').html(
+                    `<p class="text-danger">Error loading chat (${statusCode})</p>`
+                );
+            }
+
+            // ==================== CHAT FUNCTIONS ====================
+
+            /**
+             * Load and display chat messages from server
+             */
+            function loadChat() {
+                $.ajax({
+                    url: CONFIG.CHAT_URL,
+                    method: 'GET',
+                    success: function(data) {
+                        $('#chat-box').html(
+                            '<pre style="white-space: pre-wrap; font-size: 14px;">' +
+                            data +
+                            '</pre>'
+                        );
+                        scrollChatToBottom();
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Chat proxy error:', status, error, xhr.status);
+                        displayChatError(xhr.status);
+                    }
+                });
+            }
+
+            /**
+             * Load and display webcam image
+             */
+            function loadImage() {
+                const timestamp = new Date().getTime();
+                $('#frame-img').attr('src', `${CONFIG.IMAGE_URL}?t=${timestamp}`);
+            }
+
+            /**
+             * Send message to chat server
+             * @param {string} message - Message text to send
+             */
+            function sendMessage(message) {
+                const encodedUsername = encodeToBase64(CONFIG.USERNAME);
+                const encodedMessage = encodeToBase64(message);
+                const encodedKey = encodeToBase64(CONFIG.PERSONAL_KEY);
+
+                const requestUrl = `${CONFIG.SEND_URL}?username=${encodedUsername}&message=${encodedMessage}&key=${encodedKey}`;
+
+                $.get(requestUrl)
+                    .done(function() {
+                        $('#chat-input').val('').focus();
+                        loadChat();
+                    })
+                    .fail(function(xhr, status, error) {
+                        console.log('Send error:', status, error, xhr.status);
+                        alert('Error sending message');
+                    });
+            }
+
+            // ==================== EVENT HANDLERS ====================
+
+            /**
+             * Handle send button click
+             */
+            $('#send-button').click(function(e) {
+                e.preventDefault();
+
+                const message = $('#chat-input').val().trim();
+                if (!message) {
+                    return;
+                }
+
+                sendMessage(message);
+            });
+
+            /**
+             * Handle Enter key press in chat input
+             */
+            $('#chat-input').keypress(function(e) {
+                if (e.which === CONFIG.ENTER_KEY_CODE && !e.shiftKey) {
+                    e.preventDefault();
+                    $('#send-button').click();
+                }
+            });
+
+            // ==================== INITIALIZATION ====================
+
+            // Set up polling intervals
+            setInterval(loadChat, CONFIG.CHAT_REFRESH_INTERVAL);
+            setInterval(loadImage, CONFIG.IMAGE_REFRESH_INTERVAL);
+
+            // Initial load
+            loadChat();
+            loadImage();
+        });
+    </script>
+{% endblock content %}

@@ -1,0 +1,81 @@
+{% extends "main/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">
+        <div class="media">
+            <img class="rounded-circle account-img" src="{{ user.profile.image.url }}">
+            <div class="media-body">
+            <h2 class="account-heading">{{ user.username }}</h2>
+            <p class="text-secondary">{{ user.email }}</p>
+            </div>
+        </div>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Profile Info</legend>
+                {{ u_form|crispy }}
+                {{ p_form|crispy }}
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Update</button>
+            </div>
+        </form>
+    </div>
+    <hr>
+
+    <h4 class="mb-3">Analyse de l'activité</h4>
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="messagesPerAgent" width="400" height="250"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="messagesByDay" width="400" height="250"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx1 = document.getElementById('messagesPerAgent').getContext('2d');
+        const barColors = ["red", "green","blue","orange","brown"];
+
+        // 📊 Messages par agent
+        new Chart(ctx1, {
+            type:'bar',
+            data:{
+                labels: {{ labels_agents|safe}},
+                datasets: [{
+                    label:'Messages',
+                    data: {{messages_per_agent|safe}},
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options : {
+                plugins : {
+                    legend: {display:false},
+                    responsive:true,
+                    scales: { y: { beginAtZero: true } },
+                }
+            }
+        })
+
+        // 📊 Messages par jour
+        const ctx2 = document.getElementById('messagesByDay').getContext('2d');
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: {{ labels_days|safe }},
+                datasets: [{
+                    label: 'Messages/jour',
+                    data: {{ data_days|safe }},
+                    fill: true,
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+        
+    </script>
+{% endblock content %}

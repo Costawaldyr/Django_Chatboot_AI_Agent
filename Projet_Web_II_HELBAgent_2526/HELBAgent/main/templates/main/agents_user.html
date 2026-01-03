@@ -1,0 +1,22 @@
+{% extends "main/base.html" %}
+{% block content %}
+    <h1 class="mb-3">
+        Agents de {{ view.kwargs.username }} ({{ page_obj.paginator.count }})
+    </h1>
+    {% for agent in agents %}
+        <article class="media content-section">    
+            <img class="rounded-circle article-img" src="{{ agent.avatar.url }}">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2" href="{% url 'user-agents' agent.author.username %}">{{ agent.author }}</a>
+                    <small class="text-muted">{{ agent.date_created|date:"F d, Y" }}</small>
+                </div>
+                <h2><a class="article-title" href="{% url 'agent-detail' agent.id %}">{{ agent.model_name }}</a></h2>
+                <p class="article-content">{{ agent.description }}</p>
+            </div>
+        </article>
+    {% endfor %}
+
+    {# PAGINATION #}
+    {% include 'main/pagination.html' %}
+{% endblock content %}

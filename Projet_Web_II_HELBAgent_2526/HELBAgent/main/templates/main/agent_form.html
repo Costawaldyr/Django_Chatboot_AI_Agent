@@ -1,0 +1,53 @@
+{% extends 'main/base.html'%}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">        
+        <form method="POST" enctype="multipart/form-data" id="agent_form" >
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">
+                    {% if request.resolver_match.url_name == 'agent-update' %}
+                        Update Agent
+                    {% else %}
+                        New Agent
+                    {% endif %}
+                </legend>
+                {{ form|crispy }}
+                <div class="form-group">
+                    <button class="btn btn-outline-info" type="submit">
+                        {% if request.resolver_match.url_name == 'agent-update' %}
+                            Update
+                        {% else %}
+                            Create
+                        {% endif %}
+                    </button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const $modelType = $('#id_model_type');
+            const $apiKey = $(' #div_id_api_key');
+
+            function updateApiKeyVisibility() {
+                 if ($modelType.val() === 'local')
+                 {
+                     $apiKey.hide();
+                 }
+                 else
+                 {
+                     $apiKey.show();
+                 }
+            }
+
+            // Run on page load
+            if ($modelType.length && $apiKey.length)
+            {
+                updateApiKeyVisibility();
+                $modelType.on('change', function () {updateApiKeyVisibility();});
+            }
+        });
+    </script>
+{% endblock content %}

@@ -1,0 +1,58 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block content %}
+    {% if user.is_authenticated %}
+        <div class="alert alert-success" role="alert" style="text-align:center;">
+            Welcome, <strong>{{ user.username }}!</strong>
+        </div>
+        
+        <h2 style="text-align:center;">Take a look at our <strong>public AI Agents</strong></h2>
+        {% for agent in agents %}
+            <article class="media content-section">
+                <img class="rounded-circle article-img" src="{{ agent.avatar.url }}">
+                <div class="media-body">
+                    <div class="article-metadata">
+                        <a class="mr-2" href="{% url 'user-agents' agent.author.username %}">{{ agent.author }}</a>
+                        <small class="text-muted">{{ agent.date_created|date:"F d, Y" }}</small>
+                    </div>
+                    <h2><a class="article-title" href="{% url 'agent-detail' agent.id %}">{{ agent.title }}</a></h2>
+                    <p class="article-content">{{ agent.description }}</p>
+                </div>
+            </article>
+        {% endfor %}
+
+        {# PAGINATION #}
+        {% include 'main/pagination.html' %}
+
+    {% else %}
+        <section>
+            <h1>Welcome to HELBAgent – Your personalized AI assistant</h1>
+            <p>Platform for creating and interacting with personalized AI agents</p>
+            <img src="{% static 'main/img/chatbotillustration.jpg' %}"
+                style="width: 100%; height:auto; object-fit: cover;">
+            <hr>
+            <article class="container mt-3">
+                <h2>Featured AI Agents</h2>
+                <div class="card-group">
+                    <div class="card">
+                        <img src="{% static 'main/img/Graident Ai Robot.jpg' %}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">AI agent</h5>
+                            <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                            <p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <img src="{% static 'main/img/chat.jpg'%}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">Agent</h5>
+                            <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
+                            <p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+    {% endif %}
+{% endblock content %}
