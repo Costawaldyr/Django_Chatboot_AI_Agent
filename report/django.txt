@@ -44,9 +44,9 @@ pip install crispy-bootstrap5
     #Database-migration:
         1° python manage.py migrate
         2° python manage.py createsuperuser
-            username: waldyrCSL
-            Mail: costadossanto.waldyr.java.2526@gmail.com
-            password: HelbWeb2526
+            username: wxxd
+            Mail: co..@gmail.com
+            password: c......
         3° python manage.py makemigrations
         4° python manage.py migrate
         python manage.py migrate users zero => reinitialiser la migrations 
